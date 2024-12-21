@@ -1,6 +1,9 @@
 use std::{io, net::Ipv4Addr};
 
-use crate::{byte_packet_buffer::BytePacketBuffer, dns_header::DnsHeader, dns_question::DnsQuestion, dns_record::DnsRecord, query_types::QueryType};
+use crate::{
+    byte_packet_buffer::BytePacketBuffer, dns_header::DnsHeader, dns_question::DnsQuestion,
+    dns_record::DnsRecord, query_types::QueryType,
+};
 
 #[derive(Clone, Debug)]
 pub struct DnsPacket {
@@ -99,7 +102,7 @@ impl DnsPacket {
             .filter(move |(domain, _)| qname.ends_with(*domain))
     }
 
-    /// Get Resolved NS 
+    /// Get Resolved NS
     /// as We'll use the fact that name servers often bundle the corresponding
     /// A records when replying to an NS query to implement a function that
     /// returns the actual IP for an NS record if possible.
@@ -120,12 +123,9 @@ impl DnsPacket {
     /// Get Unresolved NS a method for returning the host
     /// name of an appropriate name server.
     pub fn get_unresolved_ns<'a>(&'a self, qname: &'a str) -> Option<&'a str> {
-        self.get_ns(qname)
-            .map(|(_, host)| host)
-            .next()
+        self.get_ns(qname).map(|(_, host)| host).next()
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -164,10 +164,12 @@ mod tests {
         };
         packet.resources.push(resource);
 
-        packet.write(&mut buffer).expect("Failed to write DNS packet");
+        packet
+            .write(&mut buffer)
+            .expect("Failed to write DNS packet");
 
         assert!(buffer.seek(0).is_ok());
-        
+
         let read_packet = DnsPacket::from_buffer(&mut buffer).expect("Failed to read DNS packet");
 
         // Validate the read packet
@@ -232,7 +234,10 @@ mod tests {
         let random_a = packet.get_random_a();
         assert!(random_a.is_some());
         let random_a = random_a.unwrap();
-        assert!(random_a == Ipv4Addr::new(216, 58, 211, 142) || random_a == Ipv4Addr::new(93, 184, 216, 34));
+        assert!(
+            random_a == Ipv4Addr::new(216, 58, 211, 142)
+                || random_a == Ipv4Addr::new(93, 184, 216, 34)
+        );
     }
 
     #[test]

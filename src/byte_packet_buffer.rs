@@ -8,16 +8,16 @@ pub struct BytePacketBuffer {
 impl BytePacketBuffer {
     /// This gives us a fresh buffer for holding the packet contents, and a
     /// field for keeping track of where we are.
-    pub fn new () -> BytePacketBuffer {
-        return BytePacketBuffer {
+    pub fn new() -> BytePacketBuffer {
+        BytePacketBuffer {
             buf: [0; 512],
-            pos: 0
-        };
+            pos: 0,
+        }
     }
 
     /// Current position within buffer
-    pub fn pos(&self) -> usize{
-        return self.pos;
+    pub fn pos(&self) -> usize {
+        self.pos
     }
 
     /// Step the buffer position forward a specific number of steps
@@ -49,7 +49,7 @@ impl BytePacketBuffer {
     }
 
     /// Get a single byte, without changing the buffer position
-    pub fn get(& self, pos: usize) -> Result<u8, io::Error> {
+    pub fn get(&self, pos: usize) -> Result<u8, io::Error> {
         if pos >= 512 {
             return Err(Error::new(io::ErrorKind::UnexpectedEof, "End of buffer"));
         }
@@ -57,16 +57,16 @@ impl BytePacketBuffer {
     }
 
     /// Get a range of bytes
-    pub fn get_range(& self, start: usize, len: usize) -> Result<&[u8], io::Error> {
-        if start+len > 512 {
+    pub fn get_range(&self, start: usize, len: usize) -> Result<&[u8], io::Error> {
+        if start + len > 512 {
             return Err(Error::new(io::ErrorKind::UnexpectedEof, "End of buffer"));
         }
-        Ok(&self.buf[start..(start+len) as usize])
+        Ok(&self.buf[start..(start + len)])
     }
 
     /// Read two bytes, stepping two steps forward
     pub fn read_u16(&mut self) -> Result<u16, io::Error> {
-        let res = ( ( self.read()? as u16) << 8) | ( self.read()? as u16);
+        let res = ((self.read()? as u16) << 8) | (self.read()? as u16);
         Ok(res)
     }
 
@@ -81,13 +81,12 @@ impl BytePacketBuffer {
     }
 
     /// Read a qname
-    /// 
+    ///
     /// Will take something like [3]www[6]google[3]com[0] and append
     /// www.google.com to outstr.
-    /// 
+    ///
     /// also it handle jemps .
     pub fn read_qname(&mut self, outstr: &mut String) -> Result<(), io::Error> {
-        
         let mut pos = self.pos();
         let mut jumped = false;
         let max_jumps = 5;
@@ -95,14 +94,17 @@ impl BytePacketBuffer {
         let mut delim = "";
         loop {
             if jumps_performed > max_jumps {
-                return Err(Error::new(io::ErrorKind::UnexpectedEof, format!("Limit of {} jumps exceeded", max_jumps)));
+                return Err(Error::new(
+                    io::ErrorKind::UnexpectedEof,
+                    format!("Limit of {} jumps exceeded", max_jumps),
+                ));
             }
 
             let len = self.get(pos)?;
-            
+
             if (len & 0xC0) == 0xC0 {
                 if !jumped {
-                    self.seek(pos+2)?
+                    self.seek(pos + 2)?
                 }
 
                 let b2 = self.get(pos + 1)? as u16;
@@ -111,7 +113,7 @@ impl BytePacketBuffer {
 
                 jumped = true;
                 jumps_performed += 1;
-            }else {
+            } else {
                 pos += 1;
 
                 if len == 0 {
@@ -168,15 +170,18 @@ impl BytePacketBuffer {
     }
 
     /// Write a qname
-    /// 
+    ///
     /// Will take something like www.google.com
-    /// 
+    ///
     /// dots are the separator used
     pub fn write_qname(&mut self, qname: &str) -> Result<(), io::Error> {
         for label in qname.split('.') {
             let len = label.len();
             if len > 0x3f {
-                return Err(Error::new(io::ErrorKind::UnexpectedEof, "Single label exceeds 63 characters of length"));
+                return Err(Error::new(
+                    io::ErrorKind::UnexpectedEof,
+                    "Single label exceeds 63 characters of length",
+                ));
             }
 
             self.write_u8(len as u8)?;
@@ -231,12 +236,12 @@ mod tests {
     #[test]
     fn test_read_write_limits() {
         let mut buf = BytePacketBuffer::new();
-        
+
         // Test reading at limit
         assert!(buf.seek(511).is_ok());
         assert!(buf.read().is_ok());
         assert!(buf.read().is_err());
-        
+
         // Test writing at limit
         assert!(buf.seek(511).is_ok());
         assert!(buf.write(0xFF).is_ok());
@@ -251,7 +256,7 @@ mod tests {
         buf.buf[1] = 0x34;
         buf.buf[2] = 0x56;
         buf.buf[3] = 0x78;
-        
+
         assert_eq!(buf.read_u16().unwrap(), 0x1234);
         assert!(buf.seek(0).is_ok());
         assert_eq!(buf.read_u32().unwrap(), 0x12345678);
@@ -352,7 +357,6 @@ mod tests {
         assert_eq!(outstr, "www.google.com");
     }
 
-    
     #[test]
     fn test_write_qname_success() {
         let mut buf = BytePacketBuffer::new();
@@ -370,5 +374,4 @@ mod tests {
         assert!(buf.seek(510).is_ok());
         assert!(buf.write_qname("a").is_err());
     }
-
 }

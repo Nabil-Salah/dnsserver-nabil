@@ -11,8 +11,8 @@ pub struct DnsQuestion {
 impl DnsQuestion {
     pub fn new(name: String, qtype: QueryType) -> DnsQuestion {
         DnsQuestion {
-            name: name,
-            qtype: qtype,
+            name,
+            qtype,
         }
     }
     /// Read Dns question.
@@ -42,7 +42,7 @@ mod tests {
     #[test]
     fn test_read_question_from_buffer() {
         let mut buf = BytePacketBuffer::new();
-        
+
         buf.buf[0] = 6;
         buf.buf[1..7].copy_from_slice(b"google");
         buf.buf[7] = 3;

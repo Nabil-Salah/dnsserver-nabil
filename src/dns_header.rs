@@ -25,8 +25,6 @@ impl ResultCode {
     }
 }
 
-
-
 #[derive(Clone, Debug)]
 pub struct DnsHeader {
     pub id: u16, // 16 bits
@@ -133,7 +131,7 @@ mod tests {
     #[test]
     fn test_read_header_from_buffer() {
         let mut buf = BytePacketBuffer::new();
-        
+
         buf.buf[0] = 0x12;
         buf.buf[1] = 0x34;
 
@@ -234,11 +232,13 @@ mod tests {
         assert!(read_header.read(&mut buf).is_ok());
         println!("{read_header:?}");
 
-
         assert_eq!(header.id, read_header.id);
         assert_eq!(header.recursion_desired, read_header.recursion_desired);
         assert_eq!(header.truncated_message, read_header.truncated_message);
-        assert_eq!(header.authoritative_answer, read_header.authoritative_answer);
+        assert_eq!(
+            header.authoritative_answer,
+            read_header.authoritative_answer
+        );
         assert_eq!(header.opcode, read_header.opcode);
         assert_eq!(header.response, read_header.response);
         assert_eq!(header.rescode, read_header.rescode);
@@ -248,7 +248,10 @@ mod tests {
         assert_eq!(header.recursion_available, read_header.recursion_available);
         assert_eq!(header.questions, read_header.questions);
         assert_eq!(header.answers, read_header.answers);
-        assert_eq!(header.authoritative_entries, read_header.authoritative_entries);
+        assert_eq!(
+            header.authoritative_entries,
+            read_header.authoritative_entries
+        );
         assert_eq!(header.resource_entries, read_header.resource_entries);
     }
 }

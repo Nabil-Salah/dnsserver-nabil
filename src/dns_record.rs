@@ -1,4 +1,7 @@
-use std::{io, net::{Ipv4Addr, Ipv6Addr}};
+use std::{
+    io,
+    net::{Ipv4Addr, Ipv6Addr},
+};
 
 use crate::{byte_packet_buffer::BytePacketBuffer, QueryType};
 
@@ -61,9 +64,9 @@ impl DnsRecord {
                 );
 
                 Ok(DnsRecord::A {
-                    domain: domain,
-                    addr: addr,
-                    ttl: ttl,
+                    domain,
+                    addr,
+                    ttl,
                 })
             }
             QueryType::AAAA => {
@@ -83,9 +86,9 @@ impl DnsRecord {
                 );
 
                 Ok(DnsRecord::AAAA {
-                    domain: domain,
-                    addr: addr,
-                    ttl: ttl,
+                    domain,
+                    addr,
+                    ttl,
                 })
             }
             QueryType::NS => {
@@ -93,9 +96,9 @@ impl DnsRecord {
                 buffer.read_qname(&mut ns)?;
 
                 Ok(DnsRecord::NS {
-                    domain: domain,
+                    domain,
                     host: ns,
-                    ttl: ttl,
+                    ttl,
                 })
             }
             QueryType::CNAME => {
@@ -103,9 +106,9 @@ impl DnsRecord {
                 buffer.read_qname(&mut cname)?;
 
                 Ok(DnsRecord::CNAME {
-                    domain: domain,
+                    domain,
                     host: cname,
-                    ttl: ttl,
+                    ttl,
                 })
             }
             QueryType::MX => {
@@ -114,20 +117,20 @@ impl DnsRecord {
                 buffer.read_qname(&mut mx)?;
 
                 Ok(DnsRecord::MX {
-                    domain: domain,
+                    domain,
                     priority: priority,
                     host: mx,
-                    ttl: ttl,
+                    ttl,
                 })
             }
             QueryType::UNKNOWN(_) => {
                 buffer.step(data_len as usize)?;
 
                 Ok(DnsRecord::UNKNOWN {
-                    domain: domain,
+                    domain,
                     qtype: qtype_num,
                     data_len: data_len,
-                    ttl: ttl,
+                    ttl,
                 })
             }
         }
@@ -320,7 +323,6 @@ mod tests {
         assert_eq!(record, read_record);
     }
 
-    
     #[test]
     fn test_read_aaaa_record() {
         let mut buf = BytePacketBuffer::new();
@@ -341,8 +343,8 @@ mod tests {
         buf.buf[20] = 0x00;
         buf.buf[21] = 0x10; // data_len = 16 (IPv6 length)
         buf.buf[22..38].copy_from_slice(&[
-            0x20, 0x01, 0x0d, 0xb8, 0x00, 0x10, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+            0x20, 0x01, 0x0d, 0xb8, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x01,
         ]);
 
         let record = DnsRecord::read(&mut buf).expect("Failed to read AAAA record");
@@ -350,10 +352,10 @@ mod tests {
         match record {
             DnsRecord::AAAA { domain, addr, ttl } => {
                 assert_eq!(domain, "google.com");
-                assert_eq!(addr, Ipv6Addr::new(
-                    0x2001, 0xdb8, 0x0010, 0x0000,
-                    0x0000, 0x0000, 0x0000, 0x0001,
-                ));
+                assert_eq!(
+                    addr,
+                    Ipv6Addr::new(0x2001, 0xdb8, 0x0010, 0x0000, 0x0000, 0x0000, 0x0000, 0x0001,)
+                );
                 assert_eq!(ttl, 293);
             }
             _ => panic!("Record is not of type AAAA"),
@@ -365,8 +367,7 @@ mod tests {
         let record = DnsRecord::AAAA {
             domain: "google.com".to_string(),
             addr: Ipv6Addr::new(
-                0x2001, 0xdb8, 0x0010, 0x0000,
-                0x0000, 0x0000, 0x0000, 0x0001,
+                0x2001, 0xdb8, 0x0010, 0x0000, 0x0000, 0x0000, 0x0000, 0x0001,
             ),
             ttl: 293,
         };
@@ -389,10 +390,13 @@ mod tests {
         assert_eq!(buf.buf[19], 0x25); // ttl = 293
         assert_eq!(buf.buf[20], 0x00);
         assert_eq!(buf.buf[21], 0x10); // data_len = 16
-        assert_eq!(&buf.buf[22..38], &[
-            0x20, 0x01, 0x0d, 0xb8, 0x00, 0x10, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
-        ]);
+        assert_eq!(
+            &buf.buf[22..38],
+            &[
+                0x20, 0x01, 0x0d, 0xb8, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x01,
+            ]
+        );
     }
 
     #[test]
@@ -400,8 +404,7 @@ mod tests {
         let record = DnsRecord::AAAA {
             domain: "google.com".to_string(),
             addr: Ipv6Addr::new(
-                0x2001, 0xdb8, 0x0010, 0x0000,
-                0x0000, 0x0000, 0x0000, 0x0001,
+                0x2001, 0xdb8, 0x0010, 0x0000, 0x0000, 0x0000, 0x0000, 0x0001,
             ),
             ttl: 293,
         };
@@ -457,7 +460,9 @@ mod tests {
         };
 
         let mut buf = BytePacketBuffer::new();
-        record.write(&mut buf).expect("Failed to write CNAME record");
+        record
+            .write(&mut buf)
+            .expect("Failed to write CNAME record");
 
         assert_eq!(buf.buf[0], 6);
         assert_eq!(&buf.buf[1..7], b"google");
@@ -487,7 +492,9 @@ mod tests {
         };
 
         let mut buf = BytePacketBuffer::new();
-        record.write(&mut buf).expect("Failed to write CNAME record");
+        record
+            .write(&mut buf)
+            .expect("Failed to write CNAME record");
         assert!(buf.seek(0).is_ok());
         let read_record = DnsRecord::read(&mut buf).expect("Failed to read CNAME record");
 
@@ -524,7 +531,12 @@ mod tests {
         let record = DnsRecord::read(&mut buf).expect("Failed to read MX record");
 
         match record {
-            DnsRecord::MX { domain, priority, host, ttl } => {
+            DnsRecord::MX {
+                domain,
+                priority,
+                host,
+                ttl,
+            } => {
                 assert_eq!(domain, "google.com");
                 assert_eq!(priority, 10);
                 assert_eq!(host, "mx1.com");
@@ -672,5 +684,4 @@ mod tests {
 
         assert_eq!(record, read_record);
     }
-
 }

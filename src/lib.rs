@@ -1,12 +1,17 @@
-use std::{io::{self}, net::{Ipv4Addr, UdpSocket}};
+use std::{
+    io::{self},
+    net::{Ipv4Addr, UdpSocket},
+};
 mod byte_packet_buffer;
 mod dns_header;
+mod dns_packet;
 mod dns_question;
 mod dns_record;
 mod query_types;
-mod dns_packet;
-use {byte_packet_buffer::BytePacketBuffer, dns_header::ResultCode, dns_question::DnsQuestion, query_types::QueryType, dns_packet::DnsPacket};
-
+use {
+    byte_packet_buffer::BytePacketBuffer, dns_header::ResultCode, dns_packet::DnsPacket,
+    dns_question::DnsQuestion, query_types::QueryType,
+};
 
 fn recursive_lookup(qname: &str, qtype: QueryType) -> Result<DnsPacket, io::Error> {
     // For now we're always starting with *a.root-servers.net*.
@@ -63,7 +68,7 @@ fn lookup(qname: &str, qtype: QueryType, server: (Ipv4Addr, u16)) -> Result<DnsP
 
     let mut req_buffer = BytePacketBuffer::new();
     packet.write(&mut req_buffer)?;
-    socket.send_to(&req_buffer.get_range(0, req_buffer.pos()+1)?, server)?;
+    socket.send_to(&req_buffer.get_range(0, req_buffer.pos() + 1)?, server)?;
 
     let mut res_buffer = BytePacketBuffer::new();
     socket.recv_from(&mut res_buffer.buf)?;
@@ -71,17 +76,15 @@ fn lookup(qname: &str, qtype: QueryType, server: (Ipv4Addr, u16)) -> Result<DnsP
     DnsPacket::from_buffer(&mut res_buffer)
 }
 
-/// Handle query 
-/// function handles an incoming DNS query from a UDP socket 
-/// and formulates an appropriate DNS response, 
+/// Handle query
+/// function handles an incoming DNS query from a UDP socket
+/// and formulates an appropriate DNS response,
 /// either answering directly or using recursive resolution to obtain the necessary data
 pub fn handle_query(socket: &UdpSocket) -> Result<(), io::Error> {
     let mut req_buffer = BytePacketBuffer::new();
 
-
     let (_, src) = socket.recv_from(&mut req_buffer.buf)?;
 
-    
     let mut request = DnsPacket::from_buffer(&mut req_buffer)?;
 
     let mut packet = DnsPacket::new();
@@ -92,9 +95,9 @@ pub fn handle_query(socket: &UdpSocket) -> Result<(), io::Error> {
 
     if let Some(question) = request.questions.pop() {
         println!("Received query: {:?}", question);
-            if let Ok(result) = recursive_lookup(&question.name, question.qtype) {
-                packet.questions.push(question.clone());
-                packet.header.rescode = result.header.rescode;
+        if let Ok(result) = recursive_lookup(&question.name, question.qtype) {
+            packet.questions.push(question.clone());
+            packet.header.rescode = result.header.rescode;
 
             for rec in result.answers {
                 println!("Answer: {:?}", rec);

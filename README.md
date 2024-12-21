@@ -58,7 +58,7 @@ make test
 Once the server is running, you can send DNS queries using any DNS client or command-line tools like `dig` or `nslookup`. For example:
 
 ```bash
-dig @localhost -p 2053 example.com
+dig @localhost -p 2053 google.com
 ```
 
 ## Documentation
@@ -68,6 +68,14 @@ This project is thoroughly documented. You can find detailed explanations of the
 ```bash
 make doc
 ```
+
+## Video demo
+
+
+
+https://github.com/user-attachments/assets/c58013ec-6b91-48ef-b89c-2653a87b15da
+
+
 
 ## Contributing
 

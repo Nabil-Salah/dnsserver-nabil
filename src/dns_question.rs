@@ -10,10 +10,7 @@ pub struct DnsQuestion {
 
 impl DnsQuestion {
     pub fn new(name: String, qtype: QueryType) -> DnsQuestion {
-        DnsQuestion {
-            name,
-            qtype,
-        }
+        DnsQuestion { name, qtype }
     }
     /// Read Dns question.
     pub fn read(&mut self, buffer: &mut BytePacketBuffer) -> Result<(), io::Error> {

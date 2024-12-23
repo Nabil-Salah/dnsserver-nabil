@@ -2,7 +2,7 @@ use std::io;
 
 use crate::{byte_packet_buffer::BytePacketBuffer, query_types::QueryType};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct DnsQuestion {
     pub name: String,
     pub qtype: QueryType,

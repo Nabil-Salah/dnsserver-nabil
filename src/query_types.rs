@@ -1,4 +1,4 @@
-#[derive(PartialEq, Eq, Debug, Clone, Hash, Copy)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub enum QueryType {
     UNKNOWN(u16),
     A,     // 1

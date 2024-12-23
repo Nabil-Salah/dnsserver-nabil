@@ -5,7 +5,7 @@ use std::{
 
 use crate::{byte_packet_buffer::BytePacketBuffer, QueryType};
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DnsRecord {
     UNKNOWN {
         domain: String,

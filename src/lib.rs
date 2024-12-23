@@ -13,9 +13,18 @@ use {
     dns_question::DnsQuestion, query_types::QueryType,
 };
 
-fn recursive_lookup(qname: &str, qtype: QueryType) -> Result<DnsPacket, io::Error> {
-    // For now we're always starting with *a.root-servers.net*.
-    let mut ns = "198.41.0.4".parse::<Ipv4Addr>().unwrap();
+fn recursive_lookup(
+    qname: &str,
+    qtype: QueryType,
+    root_ip: &Option<String>,
+) -> Result<DnsPacket, io::Error> {
+    // For now we're always starting with *a.root-servers.net* if no forwarding ip specified.
+    let mut ns = match root_ip {
+        Some(ip) => ip,
+        None => "198.41.0.4",
+    }
+    .parse::<Ipv4Addr>()
+    .unwrap();
 
     loop {
         println!("attempting lookup of {:?} {} with ns {}", qtype, qname, ns);
@@ -44,7 +53,7 @@ fn recursive_lookup(qname: &str, qtype: QueryType) -> Result<DnsPacket, io::Erro
             None => return Ok(response),
         };
 
-        let recursive_response = recursive_lookup(&new_ns_name, QueryType::A)?;
+        let recursive_response = recursive_lookup(&new_ns_name, QueryType::A, root_ip)?;
 
         if let Some(new_ns) = recursive_response.get_random_a() {
             ns = new_ns;
@@ -80,7 +89,7 @@ fn lookup(qname: &str, qtype: QueryType, server: (Ipv4Addr, u16)) -> Result<DnsP
 /// function handles an incoming DNS query from a UDP socket
 /// and formulates an appropriate DNS response,
 /// either answering directly or using recursive resolution to obtain the necessary data
-pub fn handle_query(socket: &UdpSocket) -> Result<(), io::Error> {
+pub fn handle_query(socket: &UdpSocket, root_ip: &Option<String>) -> Result<(), io::Error> {
     let mut req_buffer = BytePacketBuffer::new();
 
     let (_, src) = socket.recv_from(&mut req_buffer.buf)?;
@@ -95,7 +104,7 @@ pub fn handle_query(socket: &UdpSocket) -> Result<(), io::Error> {
 
     if let Some(question) = request.questions.pop() {
         println!("Received query: {:?}", question);
-        if let Ok(result) = recursive_lookup(&question.name, question.qtype) {
+        if let Ok(result) = recursive_lookup(&question.name, question.qtype, root_ip) {
             packet.questions.push(question.clone());
             packet.header.rescode = result.header.rescode;
 

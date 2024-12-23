@@ -35,6 +35,19 @@ A simple and efficient DNS server implemented in Rust, designed to handle DNS qu
    cargo build
    ```
 
+### Command Line Options
+This is the result of running hermes -h
+```bash
+A simple DNS server application
+
+Usage: dnsserver-nabil [OPTIONS]
+
+Options:
+  -p, --port <PORT>              Port to bind the UDP socket [default: 2053]
+  -f, --forward-ip <FORWARD_IP>  forward replies to specified dns server
+  -h, --help                     Print help
+  -V, --version                  Print version
+```
 ### Running the Server
 
 To run the DNS server, use the following command:

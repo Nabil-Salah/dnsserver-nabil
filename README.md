@@ -56,6 +56,16 @@ To run the DNS server, use the following command:
 make run
 ```
 
+### Running the Server using docker compose
+
+To run the DNS server but insure that you have docker installed on your machine [guidance](https://docs.docker.com/compose/install/).
+
+then use the following command :
+
+```bash
+make docker_compose_up
+```
+
 ### Running Tests
 
 To ensure everything is working correctly, you can run the test suite with:

@@ -64,7 +64,7 @@ fn recursive_lookup(
 }
 
 fn lookup(qname: &str, qtype: QueryType, server: (Ipv4Addr, u16)) -> Result<DnsPacket, io::Error> {
-    let socket = UdpSocket::bind(("0.0.0.0", 43210))?;
+    let socket = UdpSocket::bind(("0.0.0.0", 49152))?;
 
     let mut packet = DnsPacket::new();
 

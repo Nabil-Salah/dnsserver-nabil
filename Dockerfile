@@ -15,7 +15,6 @@ FROM alpine:3.19
 WORKDIR /app
 
 COPY --from=builder /src/target/x86_64-unknown-linux-musl/release/dnsserver-nabil /app/dnsserver-nabil
-COPY --from=builder /src/Cargo.toml /app/Cargo.toml
 
 # Ensure the binary is executable
 RUN chmod +x /app/dnsserver-nabil
